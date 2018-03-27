@@ -48,6 +48,7 @@ order = True
 rand = False
 pos = 0
 search = False
+desklrc = False
 
 
 class Get():
@@ -92,13 +93,12 @@ class Get():
             Form = QtWidgets.QWidget()
             ui = ui()
             ui.setupUi(Form)
-
-            animation = QPropertyAnimation(Form, b"geometry")
+            Form.setGeometry(QRect(250, 200, 420, 714))
+            animation = QPropertyAnimation(Form, b"windowOpacity")
             animation.setDuration(256)
-            animation.setStartValue(QRect(250, 250, 420, 0))
-            animation.setEndValue(QRect(250, 200, 420, 714))
+            animation.setStartValue(0)
+            animation.setEndValue(1)
             animation.start()
-
             Form.show()
             sys.exit(app.exec_())
 
@@ -140,6 +140,8 @@ class Ui_Doco(object):
             border:none;
         ''')
 
+
+
         '''
         my_dir = QFileDialog.getExistingDirectory(
     self,
@@ -147,7 +149,9 @@ class Ui_Doco(object):
     "/home/my_user_name/",
     QtGui.QFileDialog.ShowDirsOnly
     )
-       '''		
+       '''
+
+        ui_desklrc = self		
 
         self.trayIcon = QtWidgets.QSystemTrayIcon(Doco)#托盘
         self.trayIcon.setIcon(icon)
@@ -278,20 +282,65 @@ class Ui_Doco(object):
         self.listWidget.setObjectName("listWidget")
         self.listWidget.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.listWidget.verticalScrollBar().setSingleStep(1)#set step
-        #self.listWidget.setAlternatingRowColors(True);
+        self.listWidget.setAlternatingRowColors(True);
         #self.listWidget.setVisible(False)
         self.listWidget.setStyleSheet('''
-        QListWidget{
-        background:transparent;
-        border-radius:5px;
-        }
+            QListWidget{
+                background:transparent;
+                outline:0px;
+                alternate-background-color: rgba(0,0,0,2%);
+            }
+            QListWidget::item:selected {
+                background: rgba(0,0,0,50%);
+                color: #3366CC;
+                border-width: 0px;
+            }
+            QListWidget::item:hover{
+                background: rgba(0,0,0,20%);
+                color: #3366cc;
+            }
         ''')
         self.listWidget.verticalScrollBar().setStyleSheet('''
-        QScrollBar:vertical{
-        background: rgba(0, 0, 0, 50%);
-        width:15px;
-        padding-top:0px;   
-        padding-bottom:0px;}
+            QScrollBar:vertical{
+                border:none;
+                background: rgba(0,0,0,50%);
+                width:10px;
+                padding-top:0px;   
+                padding-bottom:0px;
+            }
+
+            QScrollBar::handle:vertical{
+                border:none;
+                width:10px;
+                background:rgba(0,0,0,50%);
+                border-radius:5px;
+                min-height:20;
+            }
+
+            QScrollBar::handle:vertical:hover{
+                border:none;
+                width:8px;
+                background:rgba(0,0,0,30%);
+                border-radius:5px;
+                min-height:20;
+            }
+
+            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+                background: transparent;
+                border-radius: 5px;
+            }
+
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                background: transparent;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: transparent;
+                border:none;
+            }
+            QScrollArea {
+                border:none;
+                background:rgba(0,0,0,50%);
+            }
         ''')
 
         self.lineEdit_in = QtWidgets.QLineEdit(Doco)
@@ -333,21 +382,57 @@ class Ui_Doco(object):
         self.listWidget_search.setStyleSheet('''
         QListWidget{
         background:transparent;
+        outline:0px;
         }
         QListWidget::item:selected {
-        background: transparent;
-        color:#FFF68F;
+        background: rgba(0,0,0,50%);
+        border-width: 0px;
         }
         QListWidget::item:hover{
-        background:transparent;
-        color:#333;
+        background: rgba(0,0,0,20%);
         }
         ''')
         self.listWidget_search.verticalScrollBar().setStyleSheet('''
-        QScrollBar:vertical{
-        width:15px;
-        padding-top:0px;
-        padding-bottom:0px;}
+            QScrollBar:vertical{
+                border:none;
+                background: rgba(0,0,0,50%);
+                width:10px;
+                padding-top:0px;   
+                padding-bottom:0px;
+            }
+
+            QScrollBar::handle:vertical{
+                border:none;
+                width:10px;
+                background:rgba(0,0,0,50%);
+                border-radius:5px;
+                min-height:20;
+            }
+
+            QScrollBar::handle:vertical:hover{
+                border:none;
+                width:8px;
+                background:rgba(0,0,0,30%);
+                border-radius:5px;
+                min-height:20;
+            }
+
+            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+                background: transparent;
+                border-radius: 5px;
+            }
+
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                background: transparent;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: transparent;
+                border:none;
+            }
+            QScrollArea {
+                border:none;
+                background:rgba(0,0,0,50%);
+            }
         ''')
 
         self.listWidget_word = QtWidgets.QListWidget(Doco)
@@ -431,6 +516,17 @@ class Ui_Doco(object):
         }
         ''')
 
+        self.toolButton_desklrc = QtWidgets.QToolButton(Doco,clicked=self.Lrcer)
+        self.toolButton_desklrc.setGeometry(QtCore.QRect(1170, 684, 32, 32))
+        self.toolButton_desklrc.setObjectName("toolButton_desklrc")
+        self.toolButton_desklrc.setStyleSheet('''
+            background: #333;
+            color: #fff;
+        ''')
+
+        
+
+
         self.retranslateUi(Doco)
         QtCore.QMetaObject.connectSlotsByName(Doco)
 
@@ -451,6 +547,7 @@ class Ui_Doco(object):
         #self.toolButton_min.setText(_translate("Doco", "-"))
         self.pushButton_word.setText(_translate("Doco", "词"))
         self.pushButton_style.setText(_translate("Doco", "S"))
+        self.toolButton_desklrc.setText(_translate("Doco", "D"))
 
     def music_list(self):
         self.listWidget.clear()#clear list
@@ -601,6 +698,74 @@ class Ui_Doco(object):
         #self.timer.stop()
     '''
 
+    def Lrcer(self,Doco):
+        global words_w
+        global desklrc
+
+        if not desklrc:
+            self.Form1 = QtWidgets.QWidget()
+            ui = Ui_Lrcer()
+            ui.setupUi(self.Form1)#显示desktop lrc
+            self.Form1.show()
+        else:
+            self.Form1.hide()
+        self.ui_desklrc = self.Form1
+        desklrc = not desklrc#改变desktop桌面歌词状态
+
+class Ui_Lrcer(object):
+    def setupUi(self, Lrcer):
+        Lrcer.setObjectName("Lrcer")
+        #Doco.setFixedSize(420, 714)
+        #Lrcer.setWindowFlags(QtCore.Qt.FramelessWindowHint)#去掉默认边框和标题栏
+        Lrcer.setWindowFlags(QtCore.Qt.FramelessWindowHint |#窗口透明须设置该项
+                             QtCore.Qt.SplashScreen |#同时去掉任务栏图标
+                             QtCore.Qt.WindowStaysOnTopHint)#窗体总在最前
+        
+        Lrcer.setStyleSheet('''
+            font-family:黑体;
+            border:none;
+        ''')
+
+        Lrcer.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)#窗口透明，控件文本不透明
+
+        desktop = QtWidgets.QApplication.desktop()#桌面对象
+        Lrcer.setGeometry(QRect(0,desktop.height()-100,desktop.width(),100))
+        Lrcer.label_desklrc = QtWidgets.QLabel(Lrcer)
+        Lrcer.label_desklrc.setGeometry(QtCore.QRect(0, 32, desktop.width(), 100))
+        Lrcer.label_desklrc.setObjectName("label_desklrc")
+        '''
+        self.label_desklrc.setVisible(True)
+        self.label_desklrc.verticalScrollBar().setVisible(False)
+        self.label_desklrc.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.label_desklrc.verticalScrollBar().setSingleStep(1)
+        '''
+
+
+        Lrcer.label_desklrc.setText('Doco Player桌面歌词.')
+        Lrcer.label_desklrc.setAlignment(Qt.AlignCenter)#文本居中
+
+        Lrcer.toolButton_clockclose = QtWidgets.QToolButton(Lrcer,clicked=lambda:Event.desklrc_clockclose(Lrcer))
+        Lrcer.toolButton_clockclose.setGeometry(QtCore.QRect((desktop.width()-32)//2, 0, 20, 20))
+        Lrcer.toolButton_clockclose.setObjectName("toolButton_clockclose")
+        Lrcer.toolButton_clockclose.setStyleSheet('''
+        QToolButton{
+            background: rgba(0,0,0,0.01);
+        }
+        QToolButton:hover{
+            border-image: url(image/clockclose_clock.png);
+        }
+        ''')
+        Lrcer.label_desklrc.setStyleSheet('''
+        QLabel{
+            color: #333;
+            font-size: 36px;
+            border:none;
+            outline:none;
+            font-weight: bold;
+        }
+        ''')
+
+        
 
 class ItemQWidget(QtWidgets.QWidget):
     def __init__(self,n,ui,parent = None):
@@ -1162,7 +1327,13 @@ class Event():
     def change_style(self,Doco):
         if not os.path.isfile('''image/skin/'''+str(Event.c)+'''.jpg'''):
             Event.c = 1
-            
+
+        self.animation_img = QPropertyAnimation(Doco,b'windowOpacity')
+        self.animation_img.setDuration(800)
+        self.animation_img.setStartValue(1)
+        self.animation_img.setEndValue(0.6)
+        self.animation_img.start()
+
         Doco.setStyleSheet('''
             background:transparent;
             background-image:url(image/skin/'''+str(Event.c)+'''.jpg);
@@ -1170,6 +1341,14 @@ class Event():
             font-family:黑体;
             border:none;
         ''')
+
+        self.animation_img = QPropertyAnimation(Doco,b'windowOpacity')
+        self.animation_img.setDuration(800)
+        self.animation_img.setStartValue(0.6)
+        self.animation_img.setEndValue(1)
+        self.animation_img.start()
+            
+        
         Event.c = Event.c + 1
             
 
@@ -1222,7 +1401,43 @@ class Event():
 
                    Event.y = Event.y + 50
                    self.listWidget_word.setCurrentRow(Event.t+6)
+
+                   if desklrc:
+                       Event.desklrc(self,self.ui_desklrc)
+
+    def desklrc(self,ui):
         
+        self.animation_desklrc = QPropertyAnimation(ui,b'windowOpacity')
+        self.animation_desklrc.setDuration(600)
+        self.animation_desklrc.setStartValue(1)
+        self.animation_desklrc.setEndValue(0)
+        self.animation_desklrc.start()
+
+        ui.label_desklrc.setText(words_w[pos][Event.t+6])
+
+        self.animation_desklrc = QPropertyAnimation(ui,b'windowOpacity')
+        self.animation_desklrc.setDuration(600)
+        self.animation_desklrc.setStartValue(0)
+        self.animation_desklrc.setEndValue(1)
+        self.animation_desklrc.start()
+    desklrc_clock = True
+    def desklrc_clockclose(self):
+        if Event.desklrc_clock:
+            self.toolButton_clockclose.setStyleSheet('''
+                QToolButton{
+                    background: rgba(0,0,0,0.01);
+                }
+                QToolButton:hover{
+                    border-image: url(image/clockclose_close.png);
+                }
+            ''')
+        else:
+            global desklrc
+            self.hide()
+            desklrc = not desklrc
+        Event.desklrc_clock = not Event.desklrc_clock
+
+
 
 Get.Show(Ui_Doco)
 
