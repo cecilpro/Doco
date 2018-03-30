@@ -36,9 +36,9 @@ if not os.path.exists(path):
 names = []
 count = 0
 format = []
-url_names = []#url.geturl('lili','names')
-mp3_urls = []#url.geturl('lili','srcs')
-lrc_urls = []
+url_names = ['1','2']#url.geturl('lili','names')
+mp3_urls = ['1','2']#url.geturl('lili','srcs')
+lrc_urls = ['1','2']
 
 
 one = True
@@ -125,7 +125,7 @@ qss.open(QtCore.QFile.ReadOnly)
 styleSheet = qss.readAll()
 styleSheet = str(styleSheet, encoding='utf8')
    
-class Ui_Doco(object):
+class Ui_Doco(QtWidgets.QWidget):
     def setupUi(self, Doco):
         Doco.setObjectName("Doco")
         Doco.resize(420, 714)#420, 714
@@ -346,6 +346,8 @@ class Ui_Doco(object):
         self.lineEdit_in = QtWidgets.QLineEdit(Doco)
         self.lineEdit_in.setGeometry(QtCore.QRect(720, 20, 251, 41))#620, 20, 351, 41
         self.lineEdit_in.setObjectName("lineEdit")
+        self.lineEdit_in.setPlaceholderText('歌名/歌手/专辑')
+        self.lineEdit_in.installEventFilter(self)
         self.lineEdit_in.setStyleSheet('''
         border-radius:20px;
         background:#fff;
@@ -698,6 +700,24 @@ class Ui_Doco(object):
         #self.timer.stop()
     '''
 
+    def eventFilter(self,object,event):#事件过滤器
+        if object == self.lineEdit_in:
+            if event.type() == QtCore.QEvent.FocusIn:
+                print('in')
+                self.animation = QPropertyAnimation(self.lineEdit_in,b'geometry')
+                self.animation.setDuration(200)
+                self.animation.setStartValue(QRect(720, 20, 251, 41))#620, 20, 351, 41
+                self.animation.setEndValue(QRect(620, 20, 351, 41))
+                self.animation.start()
+            if event.type() == QtCore.QEvent.FocusOut:
+                print('out')
+                self.animation = QPropertyAnimation(self.lineEdit_in,b'geometry')
+                self.animation.setDuration(200)
+                self.animation.setStartValue(QRect(620, 20, 351, 41))#620, 20, 351, 41
+                self.animation.setEndValue(QRect(720, 20, 251, 41))
+                self.animation.start()
+        return False
+
     def Lrcer(self,Doco):
         global words_w
         global desklrc
@@ -823,7 +843,16 @@ class Search_QWidget(QtWidgets.QWidget):
         background:transparent;
         ''')
         self.textQHBoxLayout = QtWidgets.QHBoxLayout()
+        self.progress        = QtWidgets.QProgressBar()
+        self.progress.setValue(0)
+        self.progress.setFixedHeight(3)
+        self.progress.setStyleSheet('''
+            QProgressBar{
+                
+            }
+        ''')
         self.name            = QtWidgets.QLabel()#歌曲名
+        self.name.move(0,0)
         self.down_btn        = QtWidgets.QToolButton()#播放
         #self.down_btn.setText('↓')
         self.down_btn.setStyleSheet('''
@@ -837,8 +866,10 @@ class Search_QWidget(QtWidgets.QWidget):
         ''')
         self.textQHBoxLayout.addWidget(self.name)
         self.textQHBoxLayout.addWidget(self.down_btn)
-        self.allQHBoxLayout  = QtWidgets.QHBoxLayout()
+        
+        self.allQHBoxLayout  = QtWidgets.QVBoxLayout()
         self.allQHBoxLayout.addLayout(self.textQHBoxLayout, 1)
+        self.allQHBoxLayout.addWidget(self.progress)
         self.setLayout(self.allQHBoxLayout)
         # setStyleSheet
         
@@ -849,7 +880,7 @@ class Search_QWidget(QtWidgets.QWidget):
         self.name.setText(x)
 
     def setDown(self):
-        self.down_btn.clicked.connect(lambda:Event().down(self.n,self.ui))
+        self.down_btn.clicked.connect(lambda:Event().down(self.n,self.ui,self.progress))
 
 class Word_QWidget(QtWidgets.QWidget):
     def __init__(self,parent = None):
@@ -905,12 +936,13 @@ class SThread(QtCore.QThread):
 
 class DThread(QtCore.QThread):
     dtrigger = pyqtSignal()
-    def __init__(self,n, parent=None):
+    def __init__(self,n,progress, parent=None):
         super(DThread, self).__init__(parent)
         self.n = n
+        self.progress = progress
     def run(self):
-        print('Start download...')
-        urllib.request.urlretrieve(mp3_urls[self.n],path+'/'+url_names[self.n]+'.'+format[self.n])
+        print('Start download...'+str(self.n))
+        urllib.request.urlretrieve(mp3_urls[self.n],path+'/'+url_names[self.n]+'.'+format[self.n],self.dprogress)
         fp = open(path+'/'+url_names[self.n]+'.lrc','w')
         fp.write(lrc_urls[self.n])
         fp.close()
@@ -923,7 +955,26 @@ class DThread(QtCore.QThread):
             time.sleep(12)
             print('chang end*******************')
 
+
         self.dtrigger.emit()
+
+    def dprogress(self,a,b,c):
+
+        print(self.progress.value())
+        '''
+        self.animation_desklrc = QPropertyAnimation(self.progress,b'value')
+        self.animation_desklrc.setDuration(10)
+        self.animation_desklrc.setStartValue(0)
+        self.animation_desklrc.setEndValue(100)
+        self.animation_desklrc.start()
+        '''
+
+        per = 100.0 * a * b / c
+        if per > 100:
+            per = 100
+        print ('%.2f%%' % per)
+        self.progress.setValue(int(per))
+        
 
 
 
@@ -1036,10 +1087,10 @@ class Event():
         ui.word_list()
         Event.t = 0
         Event.y = 0
-    def down(self,n,ui):
+    def down(self,n,ui,progress):
         print('th')
         print('self',self)
-        ui.thread1 = DThread(n)
+        ui.thread1 = DThread(n,progress)
         ui.thread1.start()
         ui.thread1.dtrigger.connect(lambda:Event.renovate(ui))
         print(1)
@@ -1062,7 +1113,6 @@ class Event():
         
         self.dthread.trigger1.connect(Event.nex)
         '''
-        print('self',self)
         word = self.lineEdit_in.text()
         self.sthread = SThread(word)
         self.sthread.start()#search thread
@@ -1132,49 +1182,6 @@ class Event():
                                                )
         else:
             self.pushButton_play.setStyleSheet(styleSheet)
-        if self.lineEdit_in.hasFocus():
-           if Event.x == 0:
-               Event.x = 1
-               self.lineEdit_in.clear()
-
-               self.animation = QPropertyAnimation(self.lineEdit_in,b'geometry')
-               self.animation.setDuration(200)
-               self.animation.setStartValue(QRect(720, 20, 251, 41))#620, 20, 351, 41
-               self.animation.setEndValue(QRect(620, 20, 351, 41))
-               self.animation.start()
-
-           self.lineEdit_in.setStyleSheet('''
-            border-radius:20px;
-            background:#fff;
-            color:#333;
-            font-size:18px;
-            QPushButton#pushButton_play:hover{
-            border-radius:10px;
-            background:url(image/4.png) no-repeat;
-            }
-            ''')
-        else:
-            if Event.x == 1:
-                Event.x = 0
-                self.lineEdit_in.clear()
-
-                self.animation = QPropertyAnimation(self.lineEdit_in,b'geometry')
-                self.animation.setDuration(200)
-                self.animation.setStartValue(QRect(620, 20, 351, 41))#620, 20, 351, 41
-                self.animation.setEndValue(QRect(720, 20, 251, 41))
-                self.animation.start()
-
-            self.lineEdit_in.setText('歌名/歌手/专辑')
-            self.lineEdit_in.setStyleSheet('''
-            border-radius:20px;
-            background:#F8F8F8;
-            color:#ccc;
-            font-size:18px;
-            QPushButton#pushButton_play:hover{
-            border-radius:10px;
-            background:url(image/4.png) no-repeat;
-            }
-            ''')
         
         
 
